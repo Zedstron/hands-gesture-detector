@@ -1,0 +1,9 @@
+numpy
+opencv-python
+pyautogui
+sklearn
+comtypes
+pycaw
+mediapipe
+xgboost
+tabulate
