@@ -5,7 +5,7 @@ from DatasetHandler import Dataset
 class Bot:
     def __init__(self, modes):
         self.modes = modes
-        self.dt = Dataset('landmarks.csv', modes)
+        self.dt = Dataset('dataset/landmarks.csv', modes)
         if self.modes['Info']:
             print('Auto Computer bot has been initialized')
     

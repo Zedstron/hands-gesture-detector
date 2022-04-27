@@ -38,7 +38,7 @@ class Dataset:
                 print('Total Classes Detected', classes)
                 print('Corrupted entries found:', corrupted)
                 
-            return np.array(x, dtype='int'), np.array(y, dtype='int')
+            return np.array(x, dtype='int'), np.array(y, dtype='int'), classes
         except Exception as e:
             if self.modes['Warning']:
                 print(e)

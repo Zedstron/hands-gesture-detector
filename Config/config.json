@@ -1,0 +1,27 @@
+{
+	"Settings": {
+		"Hands"    : true,
+		"Detect"   : true,
+		"FPS"      : true,
+		"Mouse"    : false,
+		"Media"    : false,
+		"Desktop"  : false,
+		"LiveView" : true,
+		"Posture"  : true,
+		"Unknown"  : false,
+		"Known"    : false,
+		"UseML"    : false,
+		"Debug"    : false,
+		"Info"     : true,
+		"Warning"  : true,
+		"Camera"   : 0
+	},
+	"Models": [
+		{"Alias": "DT", "Name": "Decision Tree", "Status": false },
+		{"Alias": "KNN", "Name": "K-Nearest Neighbors", "Status": false },
+		{"Alias": "RF",  "Name": "Random Forest", "Status": false },
+		{"Alias": "SVM", "Name": "Support Vector Machine", "Status": true },
+		{"Alias": "XGB", "Name": "XG Boost", "Status": false },
+		{"Alias": "NB",  "Name": "Naive Bayes", "Status": false}
+	]
+}

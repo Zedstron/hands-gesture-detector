@@ -25,44 +25,43 @@ class PostureDetector:
         self.transform = transform
         self.modes = modes
         
-        self.models = {
-            "DT": DecisionTreeClassifier(max_depth = 100),
-            "KNN": KNeighborsClassifier(n_neighbors = 15),
-            "RF": RandomForestClassifier(n_estimators=150),
-            "SVM": CalibratedClassifierCV(SVC(kernel = 'rbf', C = 10)),
-            "XGB": XGBClassifier(use_label_encoder=False, eval_metric='mlogloss'),
-            "NB": GaussianNB()
-        }
+        if modes['UseML']:
+            self.models = {
+                "DT": DecisionTreeClassifier(max_depth = 100),
+                "KNN": KNeighborsClassifier(n_neighbors = 15),
+                "RF": RandomForestClassifier(n_estimators=150),
+                "SVM": CalibratedClassifierCV(SVC(kernel = 'rbf', C = 10)),
+                "XGB": XGBClassifier(use_label_encoder=False, eval_metric='mlogloss'),
+                "NB": GaussianNB()
+            }
         
-        for detector in detectors:
-            if detector["Status"] == False:
-                if modes["Info"]:
-                    print(detector["Name"], "has been disabled")
+            for detector in detectors:
+                if detector["Status"] == False:
+                    if modes["Info"]:
+                        print(detector["Name"], "has been disabled")
    
-                del self.models[detector["Alias"]]
-            else:
-                if modes["Info"]:
-                    print(detector["Name"], "is being used")
+                    del self.models[detector["Alias"]]
+                else:
+                    if modes["Info"]:
+                        print(detector["Name"], "is being used")
         
-        self.scale = False
-        if transform:
-            self.scale = True
-            if self.modes['Info']:
-                print('Data transformation has been enabled')
-
-        self.InitTraining()
-        if self.models is not None:
-            for model in self.models.keys():
-                if modes['Debug']:
-                    print(model, 'Parameters currently in use:\n')
-                    print(self.models[model].get_params())
+        self.scale = transform
+        if transform and modes['Info']:
+            print('Data transformation has been enabled')
+        
+        if modes['UseML']:
+            self.InitTraining()
             
-            if modes['Info']:    
-                print('Hand Gesture detector is ready using', filename)
+            if self.models is not None:
+                for model in self.models.keys():
+                    if modes['Debug']:
+                        print(model, 'Parameters currently in use:\n')
+                        print(self.models[model].get_params())
         else:
-            if modes['Warning']:
-                print('Hand Gesture is not ready!')
-        self.predictor = ClassicShapePredictor(modes)
+            self.predictor = ClassicShapePredictor(modes)
+        
+        if modes['Info']:    
+            print('Hand Gesture detector is ready using', filename)
     
     def Predict(self, unknown, mapping):
         if self.modes["UseML"]:
@@ -100,6 +99,7 @@ class PostureDetector:
                 if show:
                     plot_confusion_matrix(self.models[model], X_test, y_test)  
                     plt.show()
+            self.classes = tupple[2]
         else:
             self.models = None
 
@@ -118,7 +118,7 @@ class ClassicShapePredictor:
         else:
             if self.modes["Warning"]:
                 print('Invalid landmark points for distance measuring')
-            return -1;
+            return -1
     
     def __IsFist(self, mapping):
         points = []
@@ -133,10 +133,10 @@ class ClassicShapePredictor:
         for key in mapping.keys():
             if key != 'thumb':
                 if key in names:
-                    criteria.append(mapping[key][1] < mapping['thumb'][1])
+                    criteria.append(mapping[key][1] < mapping['thumb'][1] + 5)
                 else:
-                    criteria.append(mapping[key][1] > mapping['thumb'][1])
-                
+                    criteria.append(mapping[key][1] > mapping['thumb'][1] + 5)
+        
         return all(criteria)
     
     def __IsRight(self, mapping):
@@ -146,7 +146,7 @@ class ClassicShapePredictor:
         isUp = self.__IsUP(mapping, ['index', 'middle', 'ring', 'pinky'])
         distThumb = self.__Distance(mapping['index'], mapping['thumb'])
         direction = mapping['index'][0] < mapping['thumb'][0]
-        return abs(max(points) - min(points)) <= 3 and isUp == False and distThumb < 100 and direction
+        return abs(max(points) - min(points)) <= 5 and isUp == False and distThumb < 100 and direction
     
     def __IsLeft(self, mapping):
         points = []
@@ -175,9 +175,9 @@ class ClassicShapePredictor:
                 return self.shapes[1]
             elif self.__IsUP(mappings, ['index', 'middle', 'ring']):
                 return self.shapes[2]
-            elif self.__IsUP(mappings, ['index', 'middle', 'ring', 'pinky']) and abs(mappings['pinky'][0] - mappings['thumb'][0]) <= 5:
+            elif self.__IsUP(mappings, ['index', 'middle', 'ring', 'pinky']) and mappings['index'][0] < mappings['thumb'][0]:
                 return self.shapes[3]
-            elif self.__IsUP(mappings, ['index', 'middle', 'ring', 'pinky']) and abs(mappings['pinky'][0] - mappings['thumb'][0]) >= 15:
+            elif self.__IsUP(mappings, ['index', 'middle', 'ring', 'pinky']) and mappings['index'][0] > mappings['thumb'][0]:
                 return self.shapes[4]
             elif self.__IsLeft(mappings):
                 return self.shapes[6]
